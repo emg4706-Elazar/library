@@ -1,15 +1,10 @@
 import uvicorn
 from fastapi import FastAPI
-
-
+from app.routes.book_routes import *
+from app.database.db_connection import *
 
 app = FastAPI()
-
-@app.get("/library")
-def sanity():
-    return "Hello world"
-
-
+app.include_router(router)
 
 
 

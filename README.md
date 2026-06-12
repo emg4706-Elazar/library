@@ -1,19 +1,9 @@
 
-# Library Project
+# Library Management System
 
-"מטרת הפרויקט ##
-לבנות שרת API שמנהל ספרייה,
-שזה כולל ניהול הספרים וניהול מנויי הספרייה,
-התקשורת עם תהיה ע"י בקשות HTTP בלבד.
+## Describe Program
+API Server manage books and library members
 
-
-תיאור השרת:##
-בנוי באמצעות FAST_API
-מנהל חיבור למשאב נתונים mysql
-ומבצע את הפעולות הלוגיות שלו ע"י מחלקות OOP.
-השרת נותן מענה לבקשות של clients דרך בקשות http
-דרך זה מספק:
-בקשות CRUD ומידע על המערכת.
 
 
 
@@ -166,7 +156,7 @@ library-api/
 
 ## System Rules
 
-1. **Create book** , The user `title`,`author`,`genre`,
+1. **Create book** , The user enters `title`,`author`,`genre`,
 the system add `is_available=True`, `borrowed_by=NULL`
 2. **Genre** must be `Fiction` / `Non-Fiction` / `Science`
 / `History` / `Other`. Other value will return exception,
@@ -222,7 +212,7 @@ it borrowed to a member that returns it.
 
 - The main module performs init to the program
 - The server ready to receive requests
-- The client send request to API endpoint
+- The client send CRUD requests to API endpoint
 - THe endpoint pass it to related router
 - The router call to logic functions built by OOP
 - The logic functions manage connection to mysql container
