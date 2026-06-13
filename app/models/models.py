@@ -7,5 +7,7 @@ class Book(BaseModel):
     genre: str
 
 
-
+class Member(BaseModel):
+    name: str
+    email: str
 

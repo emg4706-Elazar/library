@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.models.book_model import Book
+from app.models.models import Book
 from app.database.book_db import book_db
 router = APIRouter()
 

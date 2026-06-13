@@ -1,12 +1,10 @@
 from .db_connection import get_connection
-from fastapi import HTTPException
-
 class BookDB:
     GENRES = ["Fiction", "Non-Fiction", "Science", "History", "Other"]
 
     def create_book(self, data: dict):
         if data["genre"] not in BookDB.GENRES:
-            raise HTTPException(status_code=400)
+            return "WrongGenre"
 
         conn = get_connection()
         cursor = conn.cursor()
@@ -22,9 +20,8 @@ class BookDB:
         cursor.close()
         conn.close()
         if last_id_before == last_id_after:
-            raise HTTPException(status_code=500)
-        return
-
+            return "ProcessFailed"
+        return None
 
     def get_all_books(self):
         conn = get_connection()
@@ -35,12 +32,7 @@ class BookDB:
         conn.close()
         return books
 
-
     def get_book_by_id(self, id):
-        """
-        :param id: (int)
-        :return: dict | None
-        """
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
         sql = "SELECT * FROM books WHERE id = %s;"
@@ -50,16 +42,11 @@ class BookDB:
         conn.close()
         return book
 
-
     def update_book(self, id, data):
-        """
-        :param id: (int)
-        :param data: (dict)
-        :return:
-        """
+        if data["genre"] not in BookDB.GENRES:
+            return "WrongGenre"
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
-
         values = (data["title"],
                   data["author"],
                   data["genre"],
@@ -74,26 +61,59 @@ class BookDB:
         conn.close()
         return
 
+    def set_available(self, id, val, member_id):
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        sql = """
+        UPDATE books SET is_available = %s,
+        borrowed_by_member_id = %s WHERE id = %s;
+        """
+        cursor.execute(sql, (val, member_id, id))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return
 
+    def count_total_books(self):
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        sql = """
+        SELECT COUNT(*) as total_books FROM books;
+        """
+        cursor.execute(sql)
+        total = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return total
 
+    def count_available_books(self):
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        sql = """
+        SELECT COUNT(is_available) as available_books FROM books
+        WHERE is_available = 1;
+        """
+        cursor.execute(sql)
+        available_books = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return available_books
 
+    def count_borrowed_books(self):
+        pass
 
+    def count_by_genre(self, genre):
+        pass
 
-
+    def count_active_borrows_by_member(self, member_id):
+        pass
 
 
 
 book_db = BookDB()
 if __name__ == "__main__":
+    book_db = BookDB()
 
-    # book_db.create_book(
-    #     {
-    #         "title": "The Hitchhiker's Guide to the Galaxy",
-    #         "author": "Douglas Adams",
-    #         "genre": "Fiction"
-    #     }
-    # )
-    print(book_db.get_all_books())
 
 
 
