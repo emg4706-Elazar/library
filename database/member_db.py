@@ -1,6 +1,6 @@
 from database.db_connection import get_connection
 from mysql.connector import IntegrityError
-
+from models.models import *
 
 class MemberDB:
     def create_member(self, data):
@@ -11,14 +11,14 @@ class MemberDB:
         VALUES (%s, %s, %s, %s);
         """
         values = [data["name"], data["email"], True,0]
-        try:
-            cursor.execute(sql, values)
-        except IntegrityError:
-            return "email is not unique"
+        cursor.execute(sql, values)
         conn.commit()
+        is_created = cursor.rowcount
         cursor.close()
         conn.close()
-        return None
+        if not is_created:
+            raise ProcessFailed
+        return
 
     def get_all_members(self):
         conn = get_connection()
@@ -47,13 +47,13 @@ class MemberDB:
         UPDATE members SET name = %s, email = %s
         WHERE id = %s;
         """
-        try:
-            cursor.execute(sql, values)
-        except IntegrityError:
-            return "email is not unique"
+        cursor.execute(sql, values)
+        is_updated = cursor.rowcount
         conn.commit()
         cursor.close()
         conn.close()
+        if not is_updated:
+            raise ProcessFailed
         return
 
     def deactivate_member(self, id):

@@ -14,3 +14,6 @@ class Member(BaseModel):
 
 class WrongGenre(Exception):
     pass
+
+class ProcessFailed(Exception):
+    pass

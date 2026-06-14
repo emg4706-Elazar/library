@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from routes.book_routes import *
+from routes.member_routes import *
 from database.db_connection import *
 from database.member_db import *
 
