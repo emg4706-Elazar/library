@@ -22,15 +22,23 @@ total_borrows  INT   NOT NULL);
 """
 
 
+class DbConnection:
+    def __init__(self):
+        self.host = "127.0.0.1"
+        self.port = 3306
+        self.user = "root"
+        self.password = "secret"
+        self.database = "library_db"
 
-def get_connection():
-    return mysql.connector.connect(
-        host="127.0.0.1",
-        port=3306,
-        user="root",
-        password="secret",
-        database="library_db"
-    )
+    def get_connection(self):
+        return mysql.connector.connect(
+            host=self.host,
+            port=self.port,
+            user=self.user,
+            password=self.password,
+            database=self.database
+        )
+
 
 def create_tables(sql_q1, sql_q2):
     """

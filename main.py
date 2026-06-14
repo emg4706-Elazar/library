@@ -6,8 +6,12 @@ from database.db_connection import *
 from database.member_db import *
 from routes.report_routes import *
 
+
+
 app = FastAPI()
 app.include_router(router)
+
+
 
 
 if __name__ == "__main__":

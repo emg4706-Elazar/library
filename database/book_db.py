@@ -1,15 +1,18 @@
-from database.db_connection import get_connection
+from database.db_connection import DbConnection
 from models.models import WrongGenre
 
 
 class BookDB:
     GENRES = ["Fiction", "Non-Fiction", "Science", "History", "Other"]
 
+    def __init__(self, connection: DbConnection):
+        self.connection = connection
+
     def create_book(self, data: dict):
         if data["genre"] not in BookDB.GENRES:
             raise WrongGenre
 
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor()
         last_id_before = cursor.lastrowid
         sql = """
@@ -17,17 +20,19 @@ class BookDB:
         VALUES (%s, %s, %s, %s);
         """
         values = [data["title"], data["author"], data["genre"], True]
-        cursor.execute(sql, values)
-        conn.commit()
-        last_id_after = cursor.lastrowid
-        cursor.close()
-        conn.close()
+        try:
+            cursor.execute(sql, values)
+            conn.commit()
+            last_id_after = cursor.lastrowid
+        finally:
+            cursor.close()
+            conn.close()
         if last_id_before == last_id_after:
             return "ProcessFailed"
         return None
 
     def get_all_books(self):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM books;")
         books = cursor.fetchall()
@@ -36,7 +41,7 @@ class BookDB:
         return books
 
     def get_book_by_id(self, id):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor(dictionary=True)
         sql = "SELECT * FROM books WHERE id = %s;"
         cursor.execute(sql, (id,))
@@ -48,7 +53,7 @@ class BookDB:
     def update_book(self, id, data):
         if data["genre"] not in BookDB.GENRES:
             raise WrongGenre
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor(dictionary=True)
         values = (data["title"],
                   data["author"],
@@ -58,27 +63,31 @@ class BookDB:
         SET title = %s, author = %s, genre = %s
         WHERE id = %s;
         """
-        cursor.execute(sql, values)
-        conn.commit()
-        cursor.close()
-        conn.close()
+        try:
+            cursor.execute(sql, values)
+            conn.commit()
+        finally:
+            cursor.close()
+            conn.close()
         return
 
     def set_available(self, id, val, member_id):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor(dictionary=True)
         sql = """
         UPDATE books SET is_available = %s,
         borrowed_by_member_id = %s WHERE id = %s;
         """
-        cursor.execute(sql, (val, member_id, id))
-        conn.commit()
-        cursor.close()
-        conn.close()
+        try:
+            cursor.execute(sql, (val, member_id, id))
+            conn.commit()
+        finally:
+            cursor.close()
+            conn.close()
         return
 
     def count_total_books(self):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor(dictionary=True)
         sql = """
         SELECT COUNT(*) as total_books FROM books;
@@ -90,7 +99,7 @@ class BookDB:
         return total
 
     def count_available_books(self):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor(dictionary=True)
         sql = """
         SELECT COUNT(is_available) as available_books FROM books
@@ -103,7 +112,7 @@ class BookDB:
         return available_books
 
     def count_borrowed_books(self):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor(dictionary=True)
         sql = """
         SELECT COUNT(is_available) as currently_borrowed FROM books
@@ -116,21 +125,23 @@ class BookDB:
         return currently_borrowed
 
     def count_by_genre(self, genre):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor(dictionary=True)
         sql = """
         SELECT COUNT(*) FROM books
         WHERE genre = %s;
         """
-        cursor.execute(sql, (genre,))
-        count_genre = cursor.fetchone()
-        cursor.close()
-        conn.close()
+        try:
+            cursor.execute(sql, (genre,))
+            count_genre = cursor.fetchone()
+        finally:
+            cursor.close()
+            conn.close()
         return {"Genre": genre, "COUNT": count_genre["COUNT(*)"]}
 
 
     def count_active_borrows_by_member(self, member_id):
-        conn =get_connection()
+        conn =self.connection.get_connection()
         cursor = conn.cursor(dictionary=True)
         sql = """
         SELECT COUNT(*) as count_active_borrows
@@ -143,6 +154,4 @@ class BookDB:
         return count_borrows
 
 
-book_db = BookDB()
-if __name__ == "__main__":
-    book_db = BookDB()
+book_db = BookDB(DbConnection())

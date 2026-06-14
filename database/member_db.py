@@ -1,27 +1,32 @@
-from database.db_connection import get_connection
+from database.db_connection import DbConnection
 from mysql.connector import IntegrityError
 from models.models import *
 
 class MemberDB:
+    def __init__(self, connection: DbConnection):
+        self.connection = connection
+
     def create_member(self, data):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor()
         sql = """
         INSERT INTO members (name, email, is_active, total_borrows)
         VALUES (%s, %s, %s, %s);
         """
         values = [data["name"], data["email"], True,0]
-        cursor.execute(sql, values)
-        conn.commit()
-        is_created = cursor.rowcount
-        cursor.close()
-        conn.close()
+        try:
+            cursor.execute(sql, values)
+            conn.commit()
+            is_created = cursor.rowcount
+        finally:
+            cursor.close()
+            conn.close()
         if not is_created:
             raise ProcessFailed
         return
 
     def get_all_members(self):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM members;")
         members = cursor.fetchall()
@@ -30,7 +35,7 @@ class MemberDB:
         return members
 
     def get_member_by_id(self, id):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor(dictionary=True)
         sql = "SELECT * FROM members WHERE id = %s;"
         cursor.execute(sql, (id,))
@@ -40,7 +45,7 @@ class MemberDB:
         return member
 
     def update_member(self, id, data):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor()
         values = [data["name"], data["email"], id]
         sql = """
@@ -57,7 +62,7 @@ class MemberDB:
         return
 
     def deactivate_member(self, id):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor()
         sql = """
         UPDATE members SET is_active = False WHERE id = %s;
@@ -69,7 +74,7 @@ class MemberDB:
         return None
 
     def activate_member(self, id):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor()
         sql = """
         UPDATE members SET is_active = True WHERE id = %s;
@@ -81,7 +86,7 @@ class MemberDB:
         return None
 
     def increment_borrows(self, id):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor(dictionary=True)
         total_borrows = self.get_member_by_id(id)["total_borrows"]
         sql = """
@@ -94,7 +99,7 @@ class MemberDB:
         return
 
     def count_active_members(self):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor(dictionary=True)
         sql = """
         SELECT COUNT(is_active) as active_members FROM members
@@ -107,7 +112,7 @@ class MemberDB:
         return active_members
 
     def get_top_member(self):
-        conn = get_connection()
+        conn = self.connection.get_connection()
         cursor = conn.cursor(dictionary=True)
         sql = """SELECT id as member_id,
         total_borrows as borrowed
@@ -121,5 +126,5 @@ class MemberDB:
         return member
 
 
-member_db = MemberDB()
+member_db = MemberDB(DbConnection())
 
