@@ -40,7 +40,7 @@ class DbConnection:
         )
 
 
-def create_tables(sql_q1, sql_q2):
+def create_tables(sql_q1, sql_q2, connection):
     """
     received 2 queries:
     1. create 'books' table
@@ -49,7 +49,7 @@ def create_tables(sql_q1, sql_q2):
     :param sql_q2:
     :return:
     """
-    conn = get_connection()
+    conn = connection.get_connection()
     cursor = conn.cursor()
     cursor.execute(sql_q1)
     cursor.execute(sql_q2)

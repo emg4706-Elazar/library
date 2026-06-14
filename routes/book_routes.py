@@ -2,12 +2,12 @@ from fastapi import APIRouter, HTTPException
 from models.models import *
 from database.book_db import *
 from database.member_db import *
-router = APIRouter()
 from logs.logging_config import logger
 
+book_router = APIRouter()
 
 
-@router.post("/books")
+@book_router.post("/books", status_code=201)
 def post_book(body: Book):
     logger.info("Create book started")
     body = body.model_dump()
@@ -15,12 +15,12 @@ def post_book(body: Book):
         book_db.create_book(body)
     except WrongGenre:
         logger.error(f"Create book failed. Wrong genre: {body["genre"]}")
-        raise HTTPException(status_code=409, detail="Wrong Genre")
+        raise HTTPException(status_code=400, detail="Wrong Genre")
     logger.info("New book was created successfully")
     return "book was created successfully"
 
 
-@router.get("/books")
+@book_router.get("/books")
 def get_books():
     if not book_db.get_all_books():
         logger.warning("Get books returned None. library is empty")
@@ -29,7 +29,7 @@ def get_books():
     return book_db.get_all_books()
 
 
-@router.get("/books/{id}")
+@book_router.get("/books/{id}")
 def get_book_by_id(id: int):
     logger.info("Get book by id started")
     book = book_db.get_book_by_id(id)
@@ -40,7 +40,7 @@ def get_book_by_id(id: int):
     return book
 
 
-@router.put("/books/{id}")
+@book_router.put("/books/{id}")
 def put_book(id: int, data: Book):
     logger.info("Update book started")
     if not book_db.get_book_by_id(id):
@@ -51,13 +51,13 @@ def put_book(id: int, data: Book):
         book_db.update_book(id, data)
     except WrongGenre:
         logger.error(f"Update book failed. Wrong genre: {data["genre"]}")
-        raise HTTPException(status_code=409, detail="Wrong Genre")
+        raise HTTPException(status_code=400, detail="Wrong Genre")
     logger.info("Update book performed")
     return "Book updated"
 
 
 
-@router.put("/books/{id}/borrow/{member_id}")
+@book_router.put("/books/{id}/borrow/{member_id}")
 def borrow_book(id: int, member_id:int):
     logger.info("Borrow book stared")
     member = member_db.get_member_by_id(member_id)
@@ -68,7 +68,7 @@ def borrow_book(id: int, member_id:int):
         logger.error(f"Borrow book failed. Member not active")
         raise HTTPException(status_code=400, detail="Member is not active")
     total_borrows = book_db.count_active_borrows_by_member(member_id)
-    if total_borrows["count_active_borrows"] == 3:
+    if total_borrows["count_active_borrows"] >= 3:
         logger.error(f"Borrow book failed. Total active borrows > 3")
         raise HTTPException(status_code=400, detail="Member has reached maximum borrows")
     book = book_db.get_book_by_id(id)
@@ -84,15 +84,19 @@ def borrow_book(id: int, member_id:int):
     return "Borrow was successfully"
 
 
-@router.put("/books/{id}/return/{member_id}")
+@book_router.put("/books/{id}/return/{member_id}")
 def return_book(id: int, member_id: int):
     logger.info("Return book started")
+    book = book_db.get_book_by_id(id)
+    if not book:
+        logger.error(f"Return book failed. There's no book id: {id}")
+        raise HTTPException(status_code=404, detail="Book not found")
     member = member_db.get_member_by_id(member_id)
     if not member:
         logger.error(f"Return book failed. There's no member id: {member_id}")
         raise HTTPException(status_code=404, detail="Member not found")
-    if book_db.get_book_by_id(id)["borrowed_by_member_id"] != member_id:
-        logger.error(f"Return book failed. There's no book id: {id}")
+    if book["borrowed_by_member_id"] != member_id:
+        logger.error("Return book failed. Not borrowed by this member")
         raise HTTPException(status_code=400, detail="This book is not borrowed by you")
     book_db.set_available(id, True, None)
     logger.info(f"Book: '{id}' was returned successfully")

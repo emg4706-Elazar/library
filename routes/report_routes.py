@@ -1,11 +1,12 @@
-from routes.book_routes import router, HTTPException
+from fastapi import APIRouter, HTTPException
 from database.member_db import *
 from database.book_db import *
 from models.models import *
 from logs.logging_config import logger
 
+report_router = APIRouter()
 
-@router.get("/reports/summary")
+@report_router.get("/reports/summary")
 def get_summary():
     logger.info("Get_summary started")
     summary = dict({})
@@ -17,17 +18,17 @@ def get_summary():
     return summary
 
 
-@router.get("/reports/books-by-genre")
+@report_router.get("/reports/books-by-genre")
 def get_by_genre(genre: str):
     logger.info("Get by genre started")
     if genre not in BookDB.GENRES:
         logger.error(f"Wrong Genre: '{genre}'")
-        raise HTTPException(status_code=404, detail=f"Genre '{genre}' not found")
+        raise HTTPException(status_code=400, detail=f"Genre '{genre}' not found")
     logger.info("Get by genre performed")
     return book_db.count_by_genre(genre)
 
 
-@router.get("/reports/top-member")
+@report_router.get("/reports/top-member")
 def get_top_member():
     logger.info("Get top member performed")
     return member_db.get_top_member()

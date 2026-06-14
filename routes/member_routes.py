@@ -1,10 +1,11 @@
-from routes.book_routes import router, HTTPException
+from fastapi import APIRouter, HTTPException
+# from routes.book_routes import book_router,
 from database.member_db import *
 from models.models import *
 from logs.logging_config import logger
+member_router = APIRouter()
 
-
-@router.post("/members", status_code=201)
+@member_router.post("/members", status_code=201)
 def post_member(data: Member):
     logger.info("Create new member started")
     data = data.model_dump()
@@ -20,7 +21,7 @@ def post_member(data: Member):
     return "New member was created successfully"
 
 
-@router.get("/members")
+@member_router.get("/members")
 def get_members():
     if not member_db.get_all_members():
         return "There's no members yet"
@@ -28,7 +29,7 @@ def get_members():
     return member_db.get_all_members()
 
 
-@router.get("/members/{id}")
+@member_router.get("/members/{id}")
 def get_member_by_id(id: int):
     member = member_db.get_member_by_id(id)
     if not member:
@@ -38,7 +39,7 @@ def get_member_by_id(id: int):
     return member
 
 
-@router.put("/members/{id}")
+@member_router.put("/members/{id}")
 def put_member(id: int, data: Member):
     logger.info("Update member started")
     member = member_db.get_member_by_id(id)
@@ -58,7 +59,7 @@ def put_member(id: int, data: Member):
     return "Member was updated successfully"
 
 
-@router.put("/members/{id}/deactivate")
+@member_router.put("/members/{id}/deactivate")
 def deactivate(id: int):
     logger.info("Deactivate member started")
     member = member_db.get_member_by_id(id)
@@ -74,7 +75,7 @@ def deactivate(id: int):
 
 
 
-@router.put("/members/{id}/activate")
+@member_router.put("/members/{id}/activate")
 def activate(id: int):
     logger.info("Activate member started")
     member = member_db.get_member_by_id(id)
