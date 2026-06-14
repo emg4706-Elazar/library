@@ -89,9 +89,7 @@ library-api/
 | `id`                            | primary key                                           |
 | `title`                         | title book, maximum 50 chars, not null column         |
 | `author`                        | auther name, maximum 50 chars, not null column        |
-| `genre`                         | **values `genre` allowed:**                           |
-| Fiction                         | Non-Fiction                                           | Science | History | Other — מומש כעמודת ENUM  כל ערך       |
-| אחר מחזיר שגיאה , עמודה לא ריקה | במסד הנתונים,                                         |
+| `genre`                         | Allowed values: `Fiction`, `Non-Fiction`, `Science`, `History`, `Other`. Implemented as an ENUM column in the database. Any other value returns an error. Not null column. |
 | `is_available`                  | האם הספר זמין להשאלה — FALSE מסמן הושאל עמודה לא ריקה |
 | `borrowed_by_member_id`         | מזהה החבר שמחזיק את הספר — NULL אם זמין               |
 
@@ -175,36 +173,36 @@ it borrowed to a member that returns it.
 
 ### Books Endpoints
 
-| Method | Endpoint                         | Description  | Request Body | Response |
-|--------|----------------------------------|--------------|--------------|----------|
-| `POST` | `/books`                         | create book  |              |          |
-| `GET`  | `/books`                         | all books    |              |          |
-| `GET`  | `/books/{id}`                    | book by id   |              |          |
-| `PUT`  | `/books/{id}`                    | update booke |              |          |
-| `PUT`  | `/books/{id}/borrow/{member_id}` | borrow book  |              |          |
-| `PUT`  | `/books/{id}/return/{member_id}` | return book  |              |          |
+| Method | Endpoint                         | Description  |
+|--------|----------------------------------|--------------|
+| `POST` | `/books`                         | create book  |
+| `GET`  | `/books`                         | all books    |
+| `GET`  | `/books/{id}`                    | book by id   |
+| `PUT`  | `/books/{id}`                    | update booke |
+| `PUT`  | `/books/{id}/borrow/{member_id}` | borrow book  |
+| `PUT`  | `/books/{id}/return/{member_id}` | return book  |
 
 
 
 ### Members Endpoints
 
-| Method | Endpoint                   | Description     | Request Body | Response |
-|--------|----------------------------|-----------------|--------------|----------|
-| `POST` | `/members`                 | create member   |              |
-| `GET`  | `/members`                 | all members     |              |          |
-| `GET`  | `/members/{id}`            | member by id    |              |          |
-| `PUT`  | `/members/{id}`            | update member   |              |          |
-| `PUT`  | `/members/{id}/deactivate` | lockout member  |              |          |
-| `PUT`  | `/members/{id}/activate`   | activate member |              |          |
+| Method | Endpoint                   | Description     | 
+|--------|----------------------------|-----------------|
+| `POST` | `/members`                 | create member   |
+| `GET`  | `/members`                 | all members     |
+| `GET`  | `/members/{id}`            | member by id    |
+| `PUT`  | `/members/{id}`            | update member   |
+| `PUT`  | `/members/{id}/deactivate` | lockout member  |
+| `PUT`  | `/members/{id}/activate`   | activate member |
 
 
 ### Members Endpoints
 
-| Method | Endpoint                  | Description            | Request Body | Response |
-|--------|---------------------------|------------------------|--------------|----------|
-| `GET`  | `/reports/summary`        | genral report          |              |          |
-| `GET`  | `/reports/books-by-genre` | books by genre         |              |          |
-| `GET`  | `/reports/top-member`     | The most active member |              |          |
+| Method | Endpoint                  | Description            |
+|--------|---------------------------|------------------------|
+| `GET`  | `/reports/summary`        | genral report          |
+| `GET`  | `/reports/books-by-genre` | books by genre         |
+| `GET`  | `/reports/top-member`     | The most active member |
 
 
 
