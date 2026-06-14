@@ -10,10 +10,11 @@ def post_member(data: Member):
     logger.info("Create new member started")
     data = data.model_dump()
     try:
+        logger.info("Inserting new member into database")
         member_db.create_member(data)
     except IntegrityError:
         logger.error("Create new member failed. Email not unique")
-        raise HTTPException(status_code=400, detail="This email is not unique")
+        raise HTTPException(status_code=409, detail="This email is not unique")
     except ProcessFailed:
         logger.error("Create new member failed. Process failed")
         raise HTTPException(status_code=500, detail="Process failed for any reason")
@@ -48,10 +49,11 @@ def put_member(id: int, data: Member):
         raise HTTPException(status_code=404, detail="Member not found")
     data = data.model_dump()
     try:
+        logger.info(f"Updating member {id} in database")
         member_db.update_member(id, data)
     except IntegrityError:
         logger.error("Update member failed. Email not unique")
-        raise HTTPException(status_code=400, detail="This email is not unique")
+        raise HTTPException(status_code=409, detail="This email is not unique")
     except ProcessFailed:
         logger.error("Update member failed. Process failed")
         raise HTTPException(status_code=500, detail="Process failed for any reason")
@@ -69,6 +71,7 @@ def deactivate(id: int):
     if not member["is_active"]:
         logger.error(f"Deactivate member failed. Member is already not active")
         raise HTTPException(status_code=400, detail="Member is already not active")
+    logger.info(f"Deactivating member {id} in database")
     member_db.deactivate_member(id)
     logger.info("Deactivate member was successfully")
     return "Member doesn't active from now"
@@ -85,6 +88,7 @@ def activate(id: int):
     if member["is_active"]:
         logger.error(f"Activate member failed. Member is already active")
         raise HTTPException(status_code=400, detail="Member is already active")
+    logger.info(f"Activating member {id} in database")
     member_db.activate_member(id)
     logger.info("Activate member was successfully")
     return "Member does active from now"

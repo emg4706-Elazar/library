@@ -12,6 +12,7 @@ def post_book(body: Book):
     logger.info("Create book started")
     body = body.model_dump()
     try:
+        logger.info("Inserting new book into database")
         book_db.create_book(body)
     except WrongGenre:
         logger.error(f"Create book failed. Wrong genre: {body["genre"]}")
@@ -48,6 +49,7 @@ def put_book(id: int, data: Book):
         raise HTTPException(status_code=404, detail="Book not found")
     data = data.model_dump()
     try:
+        logger.info(f"Updating book {id} in database")
         book_db.update_book(id, data)
     except WrongGenre:
         logger.error(f"Update book failed. Wrong genre: {data["genre"]}")
@@ -78,6 +80,7 @@ def borrow_book(id: int, member_id:int):
     if not book["is_available"]:
         logger.error("Borrow book failed. book not available")
         raise HTTPException(status_code=400, detail="Book is not available")
+    logger.info(f"Updating book {id} as borrowed by member {member_id}")
     book_db.set_available(id, False, member_id)
     member_db.increment_borrows(member_id)
     logger.info("Book was borrowed successfully")
