@@ -52,9 +52,12 @@ def borrow_book(id: int, member_id:int):
     if not member["is_active"]:
         raise HTTPException(status_code=400, detail="Member is not active")
     total_borrows = book_db.count_active_borrows_by_member(member_id)
-    if total_borrows == 3:
+    if total_borrows["count_active_borrows"] == 3:
         raise HTTPException(status_code=400, detail="Member has reached maximum borrows")
-    if not book_db.get_book_by_id(id)["is_available"]:
+    book = book_db.get_book_by_id(id)
+    if not book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    if not book["is_available"]:
         raise HTTPException(status_code=400, detail="Book is not available")
     book_db.set_available(id, False, member_id)
     member_db.increment_borrows(member_id)

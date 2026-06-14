@@ -4,6 +4,7 @@ from routes.book_routes import *
 from routes.member_routes import *
 from database.db_connection import *
 from database.member_db import *
+from routes.report_routes import *
 
 app = FastAPI()
 app.include_router(router)
