@@ -1,4 +1,7 @@
-from .db_connection import get_connection
+from db_connection import get_connection
+
+
+
 class BookDB:
     GENRES = ["Fiction", "Non-Fiction", "Science", "History", "Other"]
 
@@ -100,14 +103,44 @@ class BookDB:
         return available_books
 
     def count_borrowed_books(self):
-        pass
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        sql = """
+        SELECT COUNT(is_available) as currently_borrowed FROM books
+        WHERE is_available = 0;
+        """
+        cursor.execute(sql)
+        currently_borrowed = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return currently_borrowed
 
     def count_by_genre(self, genre):
-        pass
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        sql = """
+        SELECT COUNT(*) FROM books
+        WHERE genre = %s;
+        """
+        cursor.execute(sql, (genre,))
+        count_genre = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return {"Genre": genre, "COUNT": count_genre["COUNT(*)"]}
+
 
     def count_active_borrows_by_member(self, member_id):
-        pass
-
+        conn =get_connection()
+        cursor = conn.cursor(dictionary=True)
+        sql = """
+        SELECT COUNT(*) as count_active_borrows
+        FROM books WHERE borrowed_by_member_id = %s;
+        """
+        cursor.execute(sql, (member_id,))
+        count_borrows = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        return count_borrows
 
 
 book_db = BookDB()

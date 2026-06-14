@@ -1,5 +1,6 @@
-from .db_connection import get_connection
+from db_connection import get_connection
 from mysql.connector import IntegrityError
+
 
 class MemberDB:
     def create_member(self, data):
@@ -38,8 +39,22 @@ class MemberDB:
         conn.close()
         return member
 
-    def  update_member(self, id, data):
-        pass
+    def update_member(self, id, data):
+        conn = get_connection()
+        cursor = conn.cursor()
+        values = [data["name"], data["email"], id]
+        sql = """
+        UPDATE members SET name = %s, email = %s
+        WHERE id = %s;
+        """
+        try:
+            cursor.execute(sql, values)
+        except IntegrityError:
+            return "email is not unique"
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return
 
     def deactivate_member(self, id):
         conn = get_connection()
