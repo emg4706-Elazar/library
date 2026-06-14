@@ -1,5 +1,5 @@
-from db_connection import get_connection
-
+from database.db_connection import get_connection
+from models.models import WrongGenre
 
 
 class BookDB:
@@ -7,7 +7,7 @@ class BookDB:
 
     def create_book(self, data: dict):
         if data["genre"] not in BookDB.GENRES:
-            return "WrongGenre"
+            raise WrongGenre
 
         conn = get_connection()
         cursor = conn.cursor()
@@ -47,7 +47,7 @@ class BookDB:
 
     def update_book(self, id, data):
         if data["genre"] not in BookDB.GENRES:
-            return "WrongGenre"
+            raise WrongGenre
         conn = get_connection()
         cursor = conn.cursor(dictionary=True)
         values = (data["title"],
@@ -146,12 +146,3 @@ class BookDB:
 book_db = BookDB()
 if __name__ == "__main__":
     book_db = BookDB()
-
-
-
-
-
-
-
-
-

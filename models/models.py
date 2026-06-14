@@ -11,3 +11,6 @@ class Member(BaseModel):
     name: str
     email: str
 
+
+class WrongGenre(Exception):
+    pass
